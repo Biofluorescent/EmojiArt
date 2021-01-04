@@ -9,7 +9,13 @@ import SwiftUI
 
 struct EmojiArtDocumentView: View {
     @ObservedObject var document: EmojiArtDocument
+    
     @State private var chosenPalette: String = ""
+    
+    init(document: EmojiArtDocument) {
+        self.document = document
+        _chosenPalette = State(wrappedValue: self.document.defaultPalette)
+    }
     
     var body: some View {
         VStack {
@@ -26,7 +32,6 @@ struct EmojiArtDocumentView: View {
                     }
                 }
             }
-            .onAppear { self.chosenPalette = self.document.defaultPalette }
         }
 
         .padding(.horizontal)
