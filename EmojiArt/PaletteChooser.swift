@@ -28,7 +28,7 @@ struct PaletteChooser: View {
                     self.showPaletteEditor = true
                 }
                 .popover(isPresented: $showPaletteEditor) {
-                    PaletteEditor(chosenPalette: $chosenPalette)
+                    PaletteEditor(chosenPalette: $chosenPalette, isShowing: $showPaletteEditor)
                         .environmentObject(self.document)
                         .frame(minWidth: 300, minHeight: 500)
                 }
@@ -42,12 +42,21 @@ struct PaletteEditor: View {
     @EnvironmentObject var document: EmojiArtDocument
     
     @Binding var chosenPalette: String
+    @Binding var isShowing: Bool
     @State private var paletteName: String = ""
     @State private var emojisToAdd: String = ""
     
     var body: some View {
         VStack(spacing: 0) {
-            Text("Palette Editor").font(.headline).padding()
+            ZStack {
+                Text("Palette Editor").font(.headline).padding()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        self.isShowing = false
+                    }, label: { Text("Done") }).padding()
+                }
+            }
             Divider()
             Form {
                 Section {
@@ -66,12 +75,13 @@ struct PaletteEditor: View {
                 }
                 Section(header: Text("Remove Emoji")) {
                     VStack {
-                        ForEach(chosenPalette.map { String($0) }, id: \.self) { emoji in
-                            Text(emoji)
+                        Grid(chosenPalette.map { String($0) }, id: \.self) { emoji in
+                            Text(emoji).font(Font.system(size: self.fontSize))
                                 .onTapGesture {
                                     self.chosenPalette = self.document.removeEmoji(emoji, fromPalette: self.chosenPalette)
-                                }
+                            }
                         }
+                        .frame(height: self.height)
                     }
                 }
             }
@@ -80,6 +90,12 @@ struct PaletteEditor: View {
             self.paletteName = self.document.paletteNames[self.chosenPalette] ?? ""
         }
     }
+    
+    //MARK: - Drawing Constants
+    var height: CGFloat {
+        CGFloat((chosenPalette.count - 1) / 6) * 70 + 70
+    }
+    let fontSize: CGFloat = 40
 }
 
 struct PaletteChooser_Previews: PreviewProvider {
